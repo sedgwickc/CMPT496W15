@@ -1,0 +1,14 @@
+Environment
+-----------
+
+HyperVisor: VirtualBox 4.3.10
+Distribution: ArchBang
+Kernel: 3.17.6-1-ARCH
+RAM: 2046MB
+openjdk version: 1.8.0_31
+OpenJDK 64-Bit Server VM: build 25.31-b07, mixed mode
+GCC version: 4.9.2 20141224
+
+Experiments
+-----------
+
