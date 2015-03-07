@@ -1,7 +1,7 @@
 Environment
 -----------
 
-HyperVisor: VirtualBox 4.3.10
+HyperVisor: Virtualbox 4.3.10
 Distribution: ArchBang
 Kernel: 3.17.6-1-ARCH
 RAM: 2046MB
@@ -9,6 +9,22 @@ openjdk version: 1.8.0_31
 OpenJDK 64-Bit Server VM: build 25.31-b07, mixed mode
 GCC version: 4.9.2 20141224
 
+Installing Java
+---------------
+
+Java Development Kit (JDK) - version 8 
+	> sudo pacman -S jdk8-openjdk
+	> This should install the Java runtime environment as a dependancy but if
+	not then run "sudo pacman -S jre8-openjdk-headless"
+
+Installing Git
+--------------
+
+To install Git, run "sudo pacman -S git"
+
 Experiments
 -----------
 
+The Java experiments are run with the -XmsSIZE and -XmxSIZE where SIZE is the
+total amount of memory available on the system. This ensures that the JVM is
+able to allocate all the available memory. 
