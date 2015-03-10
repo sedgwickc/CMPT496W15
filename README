@@ -27,6 +27,14 @@ Upgrading the System
 
 To upgrade the system run "sudo pacman -Syu". 
 
+Compiling the Kernel
+--------------------
+
+The Arch Linux wiki guide to traditional comilation was used. 
+	-"https://wiki.archlinux.org/index.php/Kernels/Compilation/Traditional"
+
+Grab the kernel source
+
 Experiments
 -----------
 
