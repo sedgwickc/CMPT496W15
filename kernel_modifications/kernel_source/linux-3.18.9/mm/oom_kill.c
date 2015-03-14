@@ -35,6 +35,8 @@
 #include <linux/freezer.h>
 #include <linux/ftrace.h>
 #include <linux/ratelimit.h>
+/* OOM restart */
+#include <linux/oom_restart.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/oom.h>
@@ -682,6 +684,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 	if (p != (void *)-1UL) {
 		oom_kill_process(p, gfp_mask, order, points, totalpages, NULL,
 				 nodemask, "Out of memory");
+		oom_restart();
 		killed = 1;
 	}
 out:

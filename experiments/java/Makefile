@@ -10,8 +10,8 @@ alloc_mem:
 AllocMem.class: AllocMem.java
 	$(JCC) $(JFLAGS) $^
 
-#OOMExp.class: OOMExp.java
-#	$(JCC) $(JFLAGS) $^
-
 clean:
-	rm *.class
+	rm *.class *.log
+
+exp:
+	./java_experiments.sh &> results.txt
