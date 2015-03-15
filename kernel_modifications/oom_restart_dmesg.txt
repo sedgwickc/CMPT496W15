@@ -1,0 +1,167 @@
+# This Files shows that the function oom_restart() added to the kernel source
+# was called succesfully when the oom killer was called to kill a process.
+# Line #9 shows the results of calling oom_restart().
+
+[  120.350457] Out of memory: Kill process 511 (java) score 918 or sacrifice
+child
+[  120.350459] Killed process 511 (java) total-vm:3990788kB, anon-rss:1880368kB,
+file-rss:0kB
+[  120.350547] oom_restart has been called!
+[  120.353480] systemd-journal invoked oom-killer: gfp_mask=0x201da, order=0,
+oom_score_adj=0
+[  120.353482] systemd-journal cpuset=/ mems_allowed=0
+[  120.353485] CPU: 0 PID: 129 Comm: systemd-journal Not tainted 3.18.9-ARCH #5
+[  120.353486] Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS
+VirtualBox 12/01/2006
+[  120.353487]  0000000000000000 000000003cf8970c ffff8800379f7878
+ffffffff8151b107
+[  120.353489]  0000000000000000 ffff880037929e00 ffff8800379f78f8
+ffffffff8151a606
+[  120.353490]  ffff8800379f7898 ffffffff81071b5a ffff8800379f78e8
+ffffffff810d05bc
+[  120.353492] Call Trace:
+[  120.353496]  [<ffffffff8151b107>] dump_stack+0x4e/0x71
+[  120.353498]  [<ffffffff8151a606>] dump_header+0x8e/0x217
+[  120.353501]  [<ffffffff81071b5a>] ? put_online_cpus+0x5a/0xa0
+[  120.353504]  [<ffffffff810d05bc>] ? rcu_oom_notify+0xdc/0x110
+[  120.353507]  [<ffffffff8115714c>] oom_kill_process+0x26c/0x3f0
+[  120.353509]  [<ffffffff8107a0a9>] ? has_ns_capability_noaudit+0x39/0x50
+[  120.353511]  [<ffffffff811579e1>] out_of_memory+0x501/0x560
+[  120.353513]  [<ffffffff8115d5d4>] __alloc_pages_nodemask+0xb04/0xb20
+[  120.353525]  [<ffffffff811a29a7>] alloc_pages_current+0x97/0x120
+[  120.353528]  [<ffffffff81153e47>] __page_cache_alloc+0xa7/0xd0
+[  120.353529]  [<ffffffff81155c9f>] filemap_fault+0x19f/0x400
+[  120.353532]  [<ffffffff8117f5a8>] __do_fault+0x48/0xd0
+[  120.353534]  [<ffffffff8118204f>] do_read_fault.isra.59+0x1ff/0x340
+[  120.353535]  [<ffffffff8118494e>] handle_mm_fault+0x8ae/0x10e0
+[  120.353538]  [<ffffffff8105f8e6>] __do_page_fault+0x196/0x620
+[  120.353541]  [<ffffffff8120fb52>] ? ep_poll+0x232/0x410
+[  120.353544]  [<ffffffff8109cd60>] ? wake_up_process+0x50/0x50
+[  120.353546]  [<ffffffff8105fd92>] do_page_fault+0x22/0x30
+[  120.353548]  [<ffffffff81522998>] page_fault+0x28/0x30
+[  120.353549] Mem-Info:
+[  120.353550] Node 0 DMA per-cpu:
+[  120.353552] CPU    0: hi:    0, btch:   1 usd:   0
+[  120.353552] Node 0 DMA32 per-cpu:
+[  120.353554] CPU    0: hi:  186, btch:  31 usd:   0
+[  120.353556] active_anon:488454 inactive_anon:97 isolated_anon:0
+ active_file:12 inactive_file:13 isolated_file:0
+  unevictable:0 dirty:1 writeback:0 unstable:0
+   free:13248 slab_reclaimable:2094 slab_unreclaimable:1942
+    mapped:77 shmem:439 pagetables:2327 bounce:0
+     free_cma:0
+     [  120.353558] Node 0 DMA free:8288kB min:348kB low:432kB high:520kB
+     active_anon:6780kB inactive_anon:0kB active_file:0kB inactive_file:0kB
+     unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15992kB
+     managed:15908kB mlocked:0kB dirty:0kB writeback:0kB mapped:0kB shmem:0kB
+     slab_reclaimable:12kB slab_unreclaimable:20kB kernel_stack:48kB
+     pagetables:708kB unstable:0kB bounce:0kB free_cma:0kB writeback_tmp:0kB
+     pages_scanned:8 all_unreclaimable? yes
+     [  120.353561] lowmem_reserve[]: 0 1986 1986 1986
+     [  120.353563] Node 0 DMA32 free:44704kB min:44704kB low:55880kB
+     high:67056kB active_anon:1947036kB inactive_anon:388kB active_file:48kB
+     inactive_file:52kB unevictable:0kB isolated(anon):0kB isolated(file):0kB
+     present:2078656kB managed:2036480kB mlocked:0kB dirty:4kB writeback:0kB
+     mapped:308kB shmem:1756kB slab_reclaimable:8364kB slab_unreclaimable:7748kB
+     kernel_stack:1840kB pagetables:8600kB unstable:0kB bounce:0kB free_cma:0kB
+     writeback_tmp:0kB pages_scanned:1184 all_unreclaimable? yes
+     [  120.353566] lowmem_reserve[]: 0 0 0 0
+     [  120.353568] Node 0 DMA: 2*4kB (UE) 3*8kB (EM) 2*16kB (UM) 3*32kB (UEM)
+     3*64kB (UEM) 2*128kB (UE) 2*256kB (EM) 2*512kB (UE) 2*1024kB (EM) 2*2048kB
+     (ER) 0*4096kB = 8288kB
+     [  120.353575] Node 0 DMA32: 110*4kB (UEM) 157*8kB (UEM) 72*16kB (UEM)
+     144*32kB (UEM) 230*64kB (UEM) 40*128kB (UEM) 12*256kB (EM) 8*512kB (UM)
+     8*1024kB (UEM) 1*2048kB (R) 0*4096kB = 44704kB
+     [  120.353582] Node 0 hugepages_total=0 hugepages_free=0 hugepages_surp=0
+     hugepages_size=2048kB
+     [  120.353583] 468 total pagecache pages
+     [  120.353584] 0 pages in swap cache
+     [  120.353585] Swap cache stats: add 0, delete 0, find 0/0
+     [  120.353586] Free swap  = 0kB
+     [  120.353586] Total swap = 0kB
+     [  120.353587] 523662 pages RAM
+     [  120.353588] 0 pages HighMem/MovableOnly
+     [  120.353588] 10565 pages reserved
+     [  120.353589] 0 pages hwpoisoned
+     [  120.353589] [ pid ]   uid  tgid total_vm      rss nr_ptes swapents
+     oom_score_adj name
+     [  120.353593] [  129]     0   129     9648       79      20        0
+     0 systemd-journal
+     [  120.353594] [  143]     0   143     8153      136      17        0
+     -1000 systemd-udevd
+     [  120.353596] [  190]    81   190     7821      126      22        0
+     -900 dbus-daemon
+     [  120.353598] [  192]     0   192     3799       63      11        0
+     0 systemd-logind
+     [  120.353599] [  193]     0   193     3007      924      10        0
+     0 haveged
+     [  120.353600] [  195]     0   195    84768      442      60        0
+     0 NetworkManager
+     [  120.353602] [  199]     0   199    17655      139      39        0
+     0 login
+     [  120.353603] [  221]     0   221    41263       68      15        0
+     0 gpg-agent
+     [  120.353605] [  222]     0   222    10101      151      24        0
+     -1000 sshd
+     [  120.353606] [  224]   102   224   129471     1561      50        0
+     0 polkitd
+     [  120.353608] [  381]  1000   381     8877      125      20        0
+     0 systemd
+     [  120.353609] [  383]  1000   383    20463      364      41        0
+     0 (sd-pam)
+     [  120.353611] [  385]  1000   385     3389      110      11        0
+     0 startx
+     [  120.353612] [  419]  1000   419     3980       40      12        0
+     0 xinit
+     [  120.353613] [  420]  1000   420    58269     6381     115        0
+     0 Xorg
+     [  120.353615] [  425]  1000   425     3389      102      12        0
+     0 sh
+     [  120.353616] [  429]  1000   429     4507       56      14        0
+     0 dbus-launch
+     [  120.353618] [  430]  1000   430     7755       82      20        0
+     0 dbus-daemon
+     [  120.353619] [  434]  1000   434    43511      802      85        0
+     0 openbox
+     [  120.353620] [  444]  1000   444     3389      101      11        0
+     0 sh
+     [  120.353622] [  447]  1000   447     3389      101      11        0
+     0 sh
+     [  120.353623] [  448]  1000   448     3389      101      11        0
+     0 sh
+     [  120.353625] [  455]  1000   455   115070     1505     122        0
+     0 nm-applet
+     [  120.353626] [  461]  1000   461    83850      173      31        0
+     0 at-spi-bus-laun
+     [  120.353628] [  464]  1000   464    43352      496      87        0
+     0 xfce4-notifyd
+     [  120.353629] [  466]  1000   466     8810      118      22        0
+     0 xfconfd
+     [  120.353630] [  470]  1000   470     7755       75      20        0
+     0 dbus-daemon
+     [  120.353632] [  473]  1000   473    30758      143      29        0
+     0 at-spi2-registr
+     [  120.353633] [  479]  1000   479    42176      397      86        0
+     0 tint2
+     [  120.353634] [  480]  1000   480    40837      467      80        0
+     0 spacefm
+     [  120.353636] [  481]  1000   481    43960     1043      90        0
+     0 volumeicon
+     [  120.353637] [  484]  1000   484    58699      803      86        0
+     0 lxterminal
+     [  120.353638] [  485]  1000   485     2088       31      10        0
+     0 gnome-pty-helpe
+     [  120.353640] [  486]  1000   486     3974      156      13        0
+     0 bash
+     [  120.353641] [  508]  1000   508     8544      130      20        0
+     0 make
+     [  120.353642] [  509]  1000   509     3389       93      11        0
+     0 sh
+     [  120.353644] [  510]  1000   510     3390       94      11        0
+     0 java_experiment
+     [  120.353645] [  513]  1000   511   997697   470175     958        0
+     0 java
+     [  120.353647] Out of memory: Kill process 513 (java) score 918 or
+     sacrifice child
+     [  120.353648] Killed process 513 (java) total-vm:3990788kB,
+     anon-rss:1880664kB, file-rss:36kB
