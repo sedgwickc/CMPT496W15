@@ -4,6 +4,7 @@ Environment
 HyperVisor: Virtualbox 4.3.10
 Distribution: ArchBang
 Kernel: 3.18.6-1-ARCH
+Modified Kernel: 3.18.9
 RAM: 2046MB
 openjdk version: 1.8.0_31
 OpenJDK 64-Bit Server VM: build 25.31-b07, mixed mode
@@ -34,6 +35,27 @@ The Arch Linux wiki guide to traditional comilation was used.
 	-"https://wiki.archlinux.org/index.php/Kernels/Compilation/Traditional"
 
 Grab the kernel source
+-"wget -c https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.18.9.tar.xz"
+
+Ensure oom_restart.c is in $SOURCE /mm
+
+Ensure oom_restart() is called in oom_kill.c
+
+Ensure oom_restart,o is listed in the Makefile under $SOURCE/mm
+- oom_restart.o should be added to the list of *.o files following the obj-y
+  command
+- it can also be added by adding this line: "obj-y += oom_restart.h"
+
+Ensure oom_restart.h is added to $SOURCE/include/linux
+
+Run "make"
+
+Follow the "Compilation and Installation" instructions in the wiki guide
+
+Run the following to generate a new grub2 config
+-"grub-mkconfig -o /boot/grub/grub.cfg"
+
+Restart and select the advanced options in order to select the new kernel.
 
 Experiments
 -----------
@@ -42,9 +64,7 @@ The Java experiments are run with the -XmsSIZE and -XmxSIZE where SIZE is the
 total amount of memory available on the system. This ensures that the JVM is
 able to allocate all the available memory. 
 
-Compiling Kernel Modules
-------------------------
-
-To compile a kernel module, ensure the directory "/lib/modules/$(shell uname
--r)/build" contains a Makefile otherwise you will get an error complaining that
-there is not target to build "modules". 
+To run the java experiments in java_experiments.sh
+-Run "make" in the experiements/java folder
+-Run "make exp" within the same folder
+-The results can be found in experiments/java/results.txt
