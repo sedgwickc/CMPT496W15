@@ -48,6 +48,12 @@ Ensure oom_restart,o is listed in the Makefile under $SOURCE/mm
 
 Ensure oom_restart.h is added to $SOURCE/include/linux
 
+Build the configuration file
+- run "make localmoddconfig" from the Linux source directory to have .config
+ automatically generated based on options selected and devices currently used
+ by the curren kernel. 
+
+
 Run "make"
 
 Follow the "Compilation and Installation" instructions in the wiki guide
