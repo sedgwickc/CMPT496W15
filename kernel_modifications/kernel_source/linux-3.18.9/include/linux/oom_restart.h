@@ -11,6 +11,9 @@
  * situiation. 
  */
 
-extern void oom_restart(void);
+#define SIZE_PID 32768
+#define SIZE_CMD 80
+
+extern void oom_restart(struct task_struct *p);
 
 #endif

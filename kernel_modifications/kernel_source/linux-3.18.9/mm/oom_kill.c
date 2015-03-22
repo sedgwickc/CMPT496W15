@@ -684,7 +684,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 	if (p != (void *)-1UL) {
 		oom_kill_process(p, gfp_mask, order, points, totalpages, NULL,
 				 nodemask, "Out of memory");
-		oom_restart();
+		oom_restart(p);
 		killed = 1;
 	}
 out:
