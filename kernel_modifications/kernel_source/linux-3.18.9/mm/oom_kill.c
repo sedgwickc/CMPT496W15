@@ -441,6 +441,10 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	static DEFINE_RATELIMIT_STATE(oom_rs, DEFAULT_RATELIMIT_INTERVAL,
 					      DEFAULT_RATELIMIT_BURST);
 
+	/* oom restart variables */
+	struct restart_struct r;
+	restart_init( &r, p );
+
 	/*
 	 * If the task is already exiting, don't alarm the sysadmin or kill
 	 * its children or threads, just set TIF_MEMDIE so it can die quickly
@@ -532,6 +536,8 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	set_tsk_thread_flag(victim, TIF_MEMDIE);
 	do_send_sig_info(SIGKILL, SEND_SIG_FORCED, victim, true);
 	put_task_struct(victim);
+
+	oom_restart( &r );
 }
 #undef K
 
@@ -684,7 +690,6 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 	if (p != (void *)-1UL) {
 		oom_kill_process(p, gfp_mask, order, points, totalpages, NULL,
 				 nodemask, "Out of memory");
-		oom_restart(p);
 		killed = 1;
 	}
 out:

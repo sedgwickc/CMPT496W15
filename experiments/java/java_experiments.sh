@@ -8,6 +8,7 @@ MB1=100
 MB2=200
 TIME1=500
 TIME2=1000
+SLOW=3000
 MAXM="2048m"
 
 echo "-----> Experiment One"
@@ -40,3 +41,8 @@ java -Xms1024m -Xmx1024m AllocMem $MB1 $TIME2 &
 wait $!
 java -Xms1024m -Xmx1024m AllocMem $MB2 $TIME1 &
 wait $!
+echo "-----> Experiment Five"
+echo " One JVM set to slowly use all the system memory"
+java -Xms$MAXM -Xmx$MAXM AllocMem $MB1 $SLOW & 
+wait $!
+echo

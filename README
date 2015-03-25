@@ -41,7 +41,7 @@ Ensure oom_restart.c is in $SOURCE /mm
 
 Ensure oom_restart() is called in oom_kill.c
 
-Ensure oom_restart,o is listed in the Makefile under $SOURCE/mm
+Ensure oom_restart.o is listed in the Makefile under $SOURCE/mm
 - oom_restart.o should be added to the list of *.o files following the obj-y
   command
 - it can also be added by adding this line: "obj-y += oom_restart.h"
@@ -49,17 +49,13 @@ Ensure oom_restart,o is listed in the Makefile under $SOURCE/mm
 Ensure oom_restart.h is added to $SOURCE/include/linux
 
 Build the configuration file
-- run "make localmoddconfig" from the Linux source directory to have .config
- automatically generated based on options selected and devices currently used
- by the curren kernel. 
-
+- run "make localmoddconfig" from the Linux source directory to have the .config
+ automatically generated based on the currently selected options and used devices
+ by the running kernel. 
 
 Run "make"
 
-Follow the "Compilation and Installation" instructions in the wiki guide
-
-Run the following to generate a new grub2 config
--"grub-mkconfig -o /boot/grub/grub.cfg"
+Execute "./install_kernel.sh" found in the linux source directory. 
 
 Restart and select the advanced options in order to select the new kernel.
 

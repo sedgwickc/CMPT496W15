@@ -14,6 +14,17 @@
 #define SIZE_PID 32768
 #define SIZE_CMD 80
 
-extern void oom_restart(struct task_struct *p);
+struct restart_struct{
+	pid_t pid;
+	char cmdline[SIZE_CMD];
+	cputime_t user;
+	cputime_t sys;
+	int mem_allocd;
+	int mem_growth;
+	};
+
+extern int calc_mem_growth( struct restart_struct *r );
+extern void restart_init( struct restart_struct *r, struct task_struct *p );
+extern void oom_restart( struct restart_struct *r );
 
 #endif
