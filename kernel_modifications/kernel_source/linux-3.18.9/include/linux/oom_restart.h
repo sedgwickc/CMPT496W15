@@ -11,19 +11,19 @@
  * situiation. 
  */
 
-#define SIZE_PID 32768
 #define SIZE_CMD 80
+#define SIZE_PAGE 4096
+#define SIZE_PID 32768
 
 struct restart_struct{
 	pid_t pid;
 	char cmdline[SIZE_CMD];
-	cputime_t user;
-	cputime_t sys;
-	int mem_allocd;
-	int mem_growth;
+	unsigned long mem_allocd;
+	unsigned long mem_growth;
+	u64 start_time;
 	};
 
-extern int calc_mem_growth( struct restart_struct *r );
+extern unsigned long calc_mem_growth( struct restart_struct *r );
 extern void restart_init( struct restart_struct *r, struct task_struct *p );
 extern void oom_restart( struct restart_struct *r );
 
