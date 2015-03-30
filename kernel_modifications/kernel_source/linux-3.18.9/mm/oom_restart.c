@@ -9,6 +9,8 @@
 #include <linux/stat.h>
 #include <linux/fcntl.h>
 #include <linux/mm.h>   /* needed for get_cmline() */
+#include <linux/string.h>
+#include <linux/slab.h>
 #include <linux/oom_restart.h>
 
 unsigned long calc_mem_growth( struct restart_struct *r )
@@ -39,9 +41,44 @@ void restart_init( struct restart_struct *r, struct task_struct *p )
 	{
 		if( r->cmdline[i] == '\0' )
 		{
-			r->cmdline[i] = ' ';
+			r->cmdline[i] = ';';
 		}
 	}
+}
+
+int get_args( char *cmdline, char *argv[] )
+{
+	char *cmd;
+	char *tok;
+	char del;
+	int i;
+
+	if( cmdline == NULL || argv == NULL )
+	{
+		printk( KERN_ERR "NULL value passed to get_args(char*, char**)" );
+		return -1;
+	}
+	cmd = cmdline;
+	del = ';';
+
+	tok = strsep( &cmd, &del );
+	for( i = 0; i < MAX_ARGS; i++ )
+	{
+		if( tok != NULL )
+		{
+			argv[i] = kmalloc( SIZE_ARG + 1, GFP_KERNEL );
+			if( argv[i] == NULL )
+			{
+				printk( KERN_ERR "Kernel unable to allocate memory for argument" );
+				return -1;
+			}
+			memset( argv[i], '0', SIZE_ARG + 1 );
+			strncpy( argv[i], tok, SIZE_ARG );
+			tok = strsep( &cmd, &del );
+		}
+	}
+
+	return 0;
 }
 
 /* oom_restart()
@@ -51,8 +88,17 @@ void restart_init( struct restart_struct *r, struct task_struct *p )
  * - restart: only restart killed task if its mem_growth isn't "high"
  */
 void oom_restart(struct restart_struct *r){
-	
+
+	char* argv[MAX_ARGS];
+	char* env[MAX_ENV];
+	int i;
 	struct timespec tv, boot;
+
+	if( get_args( r->cmdline, argv ) == -1 )
+	{
+		return;
+	}
+
 	getnstimeofday( &tv );
 	getboottime( &boot );
 	printk( KERN_INFO "-----OOM_RESTART-----" );
@@ -63,4 +109,10 @@ void oom_restart(struct restart_struct *r){
 	printk( KERN_INFO "Current time in seconds: %lu", tv.tv_sec );
 	printk( KERN_INFO "Memory used: %luMB", r->mem_allocd );
 	printk( KERN_INFO "Memory use rate: %lu MB/second", r->mem_growth);
+	printk( KERN_INFO "Arguments: " );
+	for( i = 0; i < MAX_ARGS && argv[i] != NULL; i++ )
+	{
+		printk( KERN_INFO "%d = %s", i, argv[i] );
+		kfree( argv[i] );
+	}
 }

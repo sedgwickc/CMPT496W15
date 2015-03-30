@@ -441,9 +441,6 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	static DEFINE_RATELIMIT_STATE(oom_rs, DEFAULT_RATELIMIT_INTERVAL,
 					      DEFAULT_RATELIMIT_BURST);
 
-	/* oom restart variables */
-	struct restart_struct r;
-	restart_init( &r, p );
 
 	/*
 	 * If the task is already exiting, don't alarm the sysadmin or kill
@@ -536,8 +533,6 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	set_tsk_thread_flag(victim, TIF_MEMDIE);
 	do_send_sig_info(SIGKILL, SEND_SIG_FORCED, victim, true);
 	put_task_struct(victim);
-
-	oom_restart( &r );
 }
 #undef K
 
@@ -647,6 +642,9 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 	enum oom_constraint constraint = CONSTRAINT_NONE;
 	int killed = 0;
 
+	/* oom restart variables */
+	struct restart_struct r;
+
 	blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
 	if (freed > 0)
 		/* Got some memory back in the last second. */
@@ -688,6 +686,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 		panic("Out of memory and no killable processes...\n");
 	}
 	if (p != (void *)-1UL) {
+		restart_init( &r, p );
 		oom_kill_process(p, gfp_mask, order, points, totalpages, NULL,
 				 nodemask, "Out of memory");
 		killed = 1;
@@ -699,6 +698,8 @@ out:
 	 */
 	if (killed)
 		schedule_timeout_killable(1);
+
+	oom_restart( &r );
 }
 
 /*
