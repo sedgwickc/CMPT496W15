@@ -696,10 +696,11 @@ out:
 	 * Give the killed threads a good chance of exiting before trying to
 	 * allocate memory again.
 	 */
-	if (killed)
-		schedule_timeout_killable(1);
-
-	oom_restart( &r );
+	if (killed){
+	//		schedule_timeout_killable(1);
+		schedule_timeout_killable(20);
+		oom_restart( &r );
+	}
 }
 
 /*

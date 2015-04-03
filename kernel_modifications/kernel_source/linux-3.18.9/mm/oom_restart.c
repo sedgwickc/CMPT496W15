@@ -11,6 +11,8 @@
 #include <linux/mm.h>   /* needed for get_cmline() */
 #include <linux/string.h>
 #include <linux/slab.h>
+#include <uapi/linux/binfmts.h>
+#include <linux/kmod.h> /* usermodehelper api */
 #include <linux/oom_restart.h>
 
 unsigned long calc_mem_growth( struct restart_struct *r )
@@ -18,7 +20,7 @@ unsigned long calc_mem_growth( struct restart_struct *r )
 	struct timespec now, boot;
 	getnstimeofday( &now );
 	getboottime( &boot );
-	return r->mem_allocd / (now.tv_sec - (boot.tv_sec + r->start_time)); /* MB/second */
+	return r->mem_allocd / (now.tv_sec - (boot.tv_sec + r->start_time)); /* KB/second */
 }
 
 void restart_init( struct restart_struct *r, struct task_struct *p )
@@ -27,13 +29,13 @@ void restart_init( struct restart_struct *r, struct task_struct *p )
 	
 	r->pid = p->pid;
 	r->start_time = p->real_start_time / 1000000000; /*start time in seconds */
-	r->mem_allocd = p->mm->hiwater_rss * 4096 / (1024 *1024);
+	r->mem_allocd = p->mm->hiwater_rss * 4096 / 1024; /* define macros for this! */
 	r->mem_growth = calc_mem_growth( r );
 
 	memset( r->cmdline, 0, SIZE_CMD );
 	if( get_cmdline(p, r->cmdline, SIZE_CMD-1 ) <= 0 )
 	{
-		printk( KERN_INFO "[ERROR] oom_restart(): cmdline not copied" );
+		pr_err( "[ERROR] oom_restart(): cmdline not copied" );
 		return;
 	}	
 
@@ -46,7 +48,8 @@ void restart_init( struct restart_struct *r, struct task_struct *p )
 	}
 }
 
-int get_args( char *cmdline, char *argv[] )
+/* check out argv_split in /include/linux/string.h */
+int parse_cmdline( char *cmdline, char *argv[] )
 {
 	char *cmd;
 	char *tok;
@@ -55,7 +58,7 @@ int get_args( char *cmdline, char *argv[] )
 
 	if( cmdline == NULL || argv == NULL )
 	{
-		printk( KERN_ERR "NULL value passed to get_args(char*, char**)" );
+		pr_err( "NULL value passed to get_args(char*, char**)" );
 		return -1;
 	}
 	cmd = cmdline;
@@ -66,15 +69,31 @@ int get_args( char *cmdline, char *argv[] )
 	{
 		if( tok != NULL )
 		{
-			argv[i] = kmalloc( SIZE_ARG + 1, GFP_KERNEL );
+			argv[i] = kzalloc( MAX_STRLEN + 1, GFP_KERNEL );
 			if( argv[i] == NULL )
 			{
-				printk( KERN_ERR "Kernel unable to allocate memory for argument" );
+				pr_err( "Kernel unable to allocate memory for argument" );
+				for(; i >= 0; i-- )
+				{
+					kfree(argv[i]);
+				}
 				return -1;
 			}
-			memset( argv[i], '0', SIZE_ARG + 1 );
-			strncpy( argv[i], tok, SIZE_ARG );
+			
+			if( i == 0 )
+			{
+				strncpy(argv[i], "/usr/bin/", 9);
+				strncat( argv[i], tok, MAX_STRLEN - 9 );
+			}
+			else
+			{
+				strncpy( argv[i], tok, MAX_STRLEN );
+			}
 			tok = strsep( &cmd, &del );
+		}
+		else 
+		{
+			argv[i] = NULL;
 		}
 	}
 
@@ -86,33 +105,55 @@ int get_args( char *cmdline, char *argv[] )
  * struct restart_struct *r
  * TODO:
  * - restart: only restart killed task if its mem_growth isn't "high"
+ * - get environment variables for task
  */
-void oom_restart(struct restart_struct *r){
+void oom_restart(struct restart_struct *r)
+{
+	char *argv[MAX_ARGS];
+	char *dummy_args[] = {
+		"/usr/bin/logger",
+		"OOM_RESTART says hello!",
+		NULL };
+	int i, ret;
+	static char *dummy_env[] = {
+		"HOME=/home/sedgwickc",
+		"TERM=xterm",
+		"PWD=/home/sedgwickc/CMPT496/experiements/java",
+		"PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin", 
+		NULL };
 
-	char* argv[MAX_ARGS];
-	char* env[MAX_ENV];
-	int i;
-	struct timespec tv, boot;
-
-	if( get_args( r->cmdline, argv ) == -1 )
+	memset( argv, 0, MAX_ARGS );
+	if( parse_cmdline( r->cmdline, argv ) == -1 )
 	{
 		return;
 	}
 
-	getnstimeofday( &tv );
-	getboottime( &boot );
-	printk( KERN_INFO "-----OOM_RESTART-----" );
-	printk( KERN_INFO "Task %u killed", r->pid);
-	printk( KERN_INFO "get_cmdline() result: %s", r->cmdline );
-	printk( KERN_INFO "start time: %lu ",  r->start_time );
-	printk( KERN_INFO "Boot time: %lu", boot.tv_sec );
-	printk( KERN_INFO "Current time in seconds: %lu", tv.tv_sec );
-	printk( KERN_INFO "Memory used: %luMB", r->mem_allocd );
-	printk( KERN_INFO "Memory use rate: %lu MB/second", r->mem_growth);
-	printk( KERN_INFO "Arguments: " );
-	for( i = 0; i < MAX_ARGS && argv[i] != NULL; i++ )
+	pr_err( "-----OOM_RESTART-----" );
+	pr_err( "Task %u killed", r->pid);
+	pr_err( "Memory use rate: %lu KB/second", r->mem_growth);
+
+	if( r->mem_growth < GROWTH_THRESH )
 	{
-		printk( KERN_INFO "%d = %s", i, argv[i] );
-		kfree( argv[i] );
+		pr_err( "Attempting restart of %s", dummy_args[0] );
+		if( (ret = call_usermodehelper( dummy_args[0], dummy_args, dummy_env, UMH_WAIT_PROC
+		)) == 0 )
+		{
+			pr_err( "%s successfully restarted!", dummy_args[0] );
+		}
+		else
+		{
+			pr_err( "Unable to restart %s. Error # %d", dummy_args[0], ret );
+		}
+	}
+
+	/* why does this print empty elements? */
+	pr_err( "Arguments: " );
+	for( i = 0; i < MAX_ARGS; i++ )
+	{
+		if( argv[i] != NULL ) 
+		{
+			pr_err( "%d = %s", i, argv[i] );
+			kfree( argv[i] );
+		}
 	}
 }

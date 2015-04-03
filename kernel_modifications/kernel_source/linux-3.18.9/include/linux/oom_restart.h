@@ -16,8 +16,9 @@
 #define SIZE_PID 32768
 #define SIZE_ARG 50
 #define SIZE_ENV 80
-#define MAX_ARGS 20
-#define MAX_ENV 20
+#define MAX_ARGS 15
+#define MAX_STRLEN 40
+#define GROWTH_THRESH 5000
 
 struct restart_struct{
 	pid_t pid;
@@ -29,7 +30,7 @@ struct restart_struct{
 
 extern unsigned long calc_mem_growth( struct restart_struct *r );
 extern void restart_init( struct restart_struct *r, struct task_struct *p );
-extern int get_args( char *cmdline, char *argv[] );
+extern int parse_cmdline( char *cmdline, char *argv[] );
 extern void oom_restart( struct restart_struct *r );
 
 #endif
