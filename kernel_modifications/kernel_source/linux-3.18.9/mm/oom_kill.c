@@ -37,6 +37,7 @@
 #include <linux/ratelimit.h>
 /* OOM restart */
 #include <linux/oom_restart.h>
+#include <linux/timer.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/oom.h>
@@ -644,6 +645,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 
 	/* oom restart variables */
 	struct restart_struct r;
+	struct timer_list restart_timer;
 
 	blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
 	if (freed > 0)
@@ -687,6 +689,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 	}
 	if (p != (void *)-1UL) {
 		restart_init( &r, p );
+		setup_timer( &restart_timer, (void *)oom_restart, (unsigned long)&r );
 		oom_kill_process(p, gfp_mask, order, points, totalpages, NULL,
 				 nodemask, "Out of memory");
 		killed = 1;
@@ -697,10 +700,13 @@ out:
 	 * allocate memory again.
 	 */
 	if (killed){
-	//		schedule_timeout_killable(1);
-		schedule_timeout_killable(20);
-		oom_restart( &r );
+		schedule_timeout_killable(1);
+		if( mod_timer( &restart_timer, jiffies + msecs_to_jiffies(500) ) )
+			pr_err( "oom_restart: Error in mod_timer" );
 	}
+
+	//if ( del_timer( &restart_timer ) )
+	//	pr_err( "oom_restart: timer still in use" );
 }
 
 /*
