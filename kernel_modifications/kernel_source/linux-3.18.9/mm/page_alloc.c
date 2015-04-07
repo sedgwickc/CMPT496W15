@@ -2235,6 +2235,8 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 	int classzone_idx, int migratetype)
 {
 	struct page *page;
+	struct restart_struct r;
+	r.pid = -1; /* sentinal value */
 
 	/* Acquire the per-zone oom lock for each zone */
 	if (!oom_zonelist_trylock(zonelist, gfp_mask)) {
@@ -2280,10 +2282,14 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 			goto out;
 	}
 	/* Exhausted what can be done so it's blamo time */
-	out_of_memory(zonelist, gfp_mask, order, nodemask, false);
+	out_of_memory(zonelist, gfp_mask, order, nodemask, false, &r);
 
 out:
 	oom_zonelist_unlock(zonelist, gfp_mask);
+
+	if( r.pid != -1 )
+		oom_restart( &r );
+
 	return page;
 }
 

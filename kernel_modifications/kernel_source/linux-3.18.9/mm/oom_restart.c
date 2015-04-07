@@ -109,6 +109,8 @@ int parse_cmdline( char *cmdline, char *argv[] )
  */
 void oom_restart(struct restart_struct *r)
 {
+
+
 	char *argv[MAX_ARGS];
 	char *dummy_args[] = {
 		"/usr/bin/logger",
@@ -121,6 +123,12 @@ void oom_restart(struct restart_struct *r)
 		"PWD=/home/sedgwickc/CMPT496/experiements/java",
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin", 
 		NULL };
+
+	if( r == NULL )
+	{
+		pr_err( "OOM_RESTART: NULL passed instead of restart_struct*");
+		return;
+	}
 
 	memset( argv, 0, MAX_ARGS );
 	if( parse_cmdline( r->cmdline, argv ) == -1 )

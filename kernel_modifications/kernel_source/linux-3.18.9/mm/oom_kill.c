@@ -633,7 +633,7 @@ void oom_zonelist_unlock(struct zonelist *zonelist, gfp_t gfp_mask)
  * don't have to be perfect here, we just have to be good.
  */
 void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
-		int order, nodemask_t *nodemask, bool force_kill)
+		int order, nodemask_t *nodemask, bool force_kill, struct restart_struct *r)
 {
 	const nodemask_t *mpol_mask;
 	struct task_struct *p;
@@ -642,10 +642,6 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 	unsigned int uninitialized_var(points);
 	enum oom_constraint constraint = CONSTRAINT_NONE;
 	int killed = 0;
-
-	/* oom restart variables */
-	struct restart_struct r;
-	struct timer_list restart_timer;
 
 	blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
 	if (freed > 0)
@@ -688,8 +684,8 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 		panic("Out of memory and no killable processes...\n");
 	}
 	if (p != (void *)-1UL) {
-		restart_init( &r, p );
-		setup_timer( &restart_timer, (void *)oom_restart, (unsigned long)&r );
+		restart_init( r, p );
+		//setup_timer( &restart_timer, (void *)oom_restart, (unsigned long)&r );
 		oom_kill_process(p, gfp_mask, order, points, totalpages, NULL,
 				 nodemask, "Out of memory");
 		killed = 1;
@@ -701,8 +697,10 @@ out:
 	 */
 	if (killed){
 		schedule_timeout_killable(1);
+		/*
 		if( mod_timer( &restart_timer, jiffies + msecs_to_jiffies(500) ) )
 			pr_err( "oom_restart: Error in mod_timer" );
+			*/
 	}
 
 	//if ( del_timer( &restart_timer ) )
@@ -717,13 +715,15 @@ out:
 void pagefault_out_of_memory(void)
 {
 	struct zonelist *zonelist;
+	struct restart_struct r;
 
 	if (mem_cgroup_oom_synchronize(true))
 		return;
 
 	zonelist = node_zonelist(first_memory_node, GFP_KERNEL);
 	if (oom_zonelist_trylock(zonelist, GFP_KERNEL)) {
-		out_of_memory(NULL, 0, 0, NULL, false);
+		out_of_memory(NULL, 0, 0, NULL, false, &r);
 		oom_zonelist_unlock(zonelist, GFP_KERNEL);
+		oom_restart( &r );
 	}
 }
