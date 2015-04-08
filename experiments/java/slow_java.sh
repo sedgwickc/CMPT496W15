@@ -18,6 +18,7 @@ do
 java -Xms$MAXM -Xmx$MAXM AllocMem $MB1 $SLOW
 COUNT=$((COUNT + 1)) 
 echo "count: $COUNT"
+# sleep 5
 done
 wait $!
 echo
