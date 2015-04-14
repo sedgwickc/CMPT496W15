@@ -11,6 +11,8 @@
  * situiation. 
  */
 
+#include <linux/kernel.h> 
+
 #define SIZE_CMD 80
 #define SIZE_PAGE 4096
 #define SIZE_PID 32768
@@ -26,11 +28,14 @@ struct restart_struct{
 	unsigned long mem_allocd;
 	unsigned long mem_growth;
 	u64 start_time;
-	};
+};
 
+extern int (*restart_cmd_send)(void);
+
+extern void set_cmd_func( int (*cmd_func)(void) );
 extern unsigned long calc_mem_growth( struct restart_struct *r );
 extern void restart_init( struct restart_struct *r, struct task_struct *p );
 extern int parse_cmdline( char *cmdline, char *argv[] );
 extern void oom_restart( struct restart_struct *r );
-
+extern int restart_module_loaded(void);
 #endif

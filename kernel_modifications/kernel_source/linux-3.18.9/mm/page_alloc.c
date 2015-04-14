@@ -2287,8 +2287,10 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
 out:
 	oom_zonelist_unlock(zonelist, gfp_mask);
 
-	if( r.pid != -1 )
-		oom_restart( &r );
+	if( r.pid > 0 && !page )
+		oom_restart( &r );	
+	else if( !page )
+		pr_err( "No task returned from out_of_memory(). PID: %ld", r.pid );
 
 	return page;
 }

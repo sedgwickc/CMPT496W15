@@ -4,7 +4,6 @@
  * Implementation of oom_restart.h functions
  */
 
-#include <linux/kernel.h>
 #include <linux/sched.h>
 #include <linux/stat.h>
 #include <linux/fcntl.h>
@@ -12,8 +11,14 @@
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <uapi/linux/binfmts.h>
-#include <linux/kmod.h> /* usermodehelper api */
 #include <linux/oom_restart.h>
+
+int (*restart_cmd_send)(void) = NULL;
+
+void set_cmd_func( int (*cmd_func)(void) ){
+	restart_cmd_send = cmd_func;
+}
+EXPORT_SYMBOL(set_cmd_func);
 
 unsigned long calc_mem_growth( struct restart_struct *r )
 {
@@ -100,6 +105,13 @@ int parse_cmdline( char *cmdline, char *argv[] )
 	return 0;
 }
 
+int restart_module_loaded(){
+	if( restart_cmd_send != NULL )
+		return 1;
+	else
+		return 0;
+}
+
 /* oom_restart()
  * params
  * struct restart_struct *r
@@ -109,30 +121,11 @@ int parse_cmdline( char *cmdline, char *argv[] )
  */
 void oom_restart(struct restart_struct *r)
 {
-
-
-	char *argv[MAX_ARGS];
-	char *dummy_args[] = {
-		"/usr/bin/logger",
-		"OOM_RESTART says hello!",
-		NULL };
-	int i, ret;
-	static char *dummy_env[] = {
-		"HOME=/home/sedgwickc",
-		"TERM=xterm",
-		"PWD=/home/sedgwickc/CMPT496/experiements/java",
-		"PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin", 
-		NULL };
+	int rc;
 
 	if( r == NULL )
 	{
 		pr_err( "OOM_RESTART: NULL passed instead of restart_struct*");
-		return;
-	}
-
-	memset( argv, 0, MAX_ARGS );
-	if( parse_cmdline( r->cmdline, argv ) == -1 )
-	{
 		return;
 	}
 
@@ -142,26 +135,33 @@ void oom_restart(struct restart_struct *r)
 
 	if( r->mem_growth < GROWTH_THRESH )
 	{
-		pr_err( "Attempting restart of %s", dummy_args[0] );
-		if( (ret = call_usermodehelper( dummy_args[0], dummy_args, dummy_env, UMH_WAIT_PROC
-		)) == 0 )
+		pr_err( "OOM_RESTART: sending message to userland" );
+		if( restart_module_loaded() )
+			rc = restart_cmd_send();
+		else
 		{
-			pr_err( "%s successfully restarted!", dummy_args[0] );
+			pr_err( "Restart module not loaded" );
+			return;
+		}
+		if( rc < 0 )
+			pr_err( "OOM_RESTART: restart_cmd_send returned with error: %d", rc );
+	}
+
+	return;
+	/* 
+		pr_err( "Attempting restart of %s", argv[0] );
+		if( (ret = call_usermodehelper( argv[0], argv, dummy_env, UMH_WAIT_PROC
+			)) == 0 )
+		{
+			pr_err( "%s successfully restarted!", argv[0] );
 		}
 		else
 		{
-			pr_err( "Unable to restart %s. Error # %d", dummy_args[0], ret );
+			pr_err( "Unable to restart %s. Error # %d", argv[0], ret );
 		}
 	}
-
-	/* why does this print empty elements? */
-	pr_err( "Arguments: " );
-	for( i = 0; i < MAX_ARGS; i++ )
-	{
-		if( argv[i] != NULL ) 
-		{
-			pr_err( "%d = %s", i, argv[i] );
-			kfree( argv[i] );
-		}
-	}
+*/
+failure:
+	pr_err( "OOM_RESTART: setting up netlink failed with error %d", rc );
+	return;
 }
