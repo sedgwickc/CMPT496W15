@@ -22,6 +22,9 @@ restarter_libnl: restarter_libnl.o
 restarter_debug: restarter_db.o
 	$(CC) $(LINK) $^ -o $@
 
+restarter_2:
+	gcc -Wall -std=c99 restarter_2.c -o restarter
+
 %.o: %.c
 	$(CC) $(CFLAGS) $(LIBNL) $^ -o $@ 
 
