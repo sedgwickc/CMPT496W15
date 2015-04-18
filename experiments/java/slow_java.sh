@@ -15,7 +15,7 @@ COUNT=0
 echo "One JVM set to allocate $MB1 MB per $SLOW milliseconds"
 while :
 do
-java -Xms$MAXM -Xmx$MAXM AllocMem $MB1 $SLOW
+java -Xms$MAXM -Xmx$MAXM -cp /home/sedgwickc/CMPT460/experiments/java/ AllocMem $MB1 $SLOW
 COUNT=$((COUNT + 1)) 
 echo "count: $COUNT"
 # sleep 5

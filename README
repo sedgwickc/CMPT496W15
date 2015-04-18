@@ -24,7 +24,7 @@ Installing Git
 To install Git, run "sudo pacman -S git"
 
 Upgrading the System
--------------------------
+--------------------
 
 To upgrade the system run "sudo pacman -Syu". 
 
@@ -38,8 +38,6 @@ Grab the kernel source
 -"wget -c https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.18.9.tar.xz"
 
 Ensure oom_restart.c is in $SOURCE /mm
-
-Ensure oom_restart() is called in oom_kill.c
 
 Ensure oom_restart.o is listed in the Makefile under $SOURCE/mm
 - oom_restart.o should be added to the list of *.o files following the obj-y
@@ -59,6 +57,12 @@ Execute "./install_kernel.sh" found in the linux source directory.
 
 Restart and select the advanced options in order to select the new kernel.
 
+Kernel Config
+-------------
+
+Copy the 99-sysctl.conf file found in the root of the repo in order to set the
+kernel to restart 5 seconds after it detects a panic.
+
 Experiments
 -----------
 
@@ -70,3 +74,6 @@ To run the java experiments in java_experiments.sh
 -Run "make" in the experiements/java folder
 -Run "make exp" within the same folder
 -The results can be found in experiments/java/results.txt
+
+Use the experiements/java/slow_java.sh script to continually create OOM
+situations.

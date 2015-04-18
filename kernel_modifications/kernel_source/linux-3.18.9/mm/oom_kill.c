@@ -671,6 +671,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 	    !oom_unkillable_task(current, NULL, nodemask) &&
 	    current->signal->oom_score_adj != OOM_SCORE_ADJ_MIN) {
 		get_task_struct(current);
+		restart_init( r, current );
 		oom_kill_process(current, gfp_mask, order, 0, totalpages, NULL,
 				 nodemask,
 				 "Out of memory (oom_kill_allocating_task)");
@@ -697,14 +698,7 @@ out:
 	 */
 	if (killed){
 		schedule_timeout_killable(1);
-		/*
-		if( mod_timer( &restart_timer, jiffies + msecs_to_jiffies(500) ) )
-			pr_err( "oom_restart: Error in mod_timer" );
-			*/
 	}
-
-	//if ( del_timer( &restart_timer ) )
-	//	pr_err( "oom_restart: timer still in use" );
 }
 
 /*

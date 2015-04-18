@@ -13,12 +13,12 @@
 
 #include <linux/kernel.h> 
 
-#define SIZE_CMD 80
+#define SIZE_CMD 128
 #define SIZE_PAGE 4096
 #define SIZE_PID 32768
 #define SIZE_ARG 50
 #define SIZE_ENV 80
-#define MAX_ARGS 15
+#define MAX_ARGS 20
 #define MAX_STRLEN 40
 #define GROWTH_THRESH 5000
 
@@ -30,9 +30,9 @@ struct restart_struct{
 	u64 start_time;
 };
 
-extern int (*restart_cmd_send)(void);
+extern int (*restart_cmd_send)(char *);
 
-extern void set_cmd_func( int (*cmd_func)(void) );
+extern void set_cmd_func( int (*cmd_func)(char *) );
 extern unsigned long calc_mem_growth( struct restart_struct *r );
 extern void restart_init( struct restart_struct *r, struct task_struct *p );
 extern int parse_cmdline( char *cmdline, char *argv[] );

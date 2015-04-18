@@ -13,9 +13,9 @@
 #include <uapi/linux/binfmts.h>
 #include <linux/oom_restart.h>
 
-int (*restart_cmd_send)(void) = NULL;
+int (*restart_cmd_send)(char *) = NULL;
 
-void set_cmd_func( int (*cmd_func)(void) ){
+void set_cmd_func( int (*cmd_func)(char*) ){
 	restart_cmd_send = cmd_func;
 }
 EXPORT_SYMBOL(set_cmd_func);
@@ -37,7 +37,7 @@ void restart_init( struct restart_struct *r, struct task_struct *p )
 	r->mem_allocd = p->mm->hiwater_rss * 4096 / 1024; /* define macros for this! */
 	r->mem_growth = calc_mem_growth( r );
 
-	memset( r->cmdline, 0, SIZE_CMD );
+	memset( r->cmdline, 0, SIZE_CMD + 1 );
 	if( get_cmdline(p, r->cmdline, SIZE_CMD-1 ) <= 0 )
 	{
 		pr_err( "[ERROR] oom_restart(): cmdline not copied" );
@@ -137,7 +137,7 @@ void oom_restart(struct restart_struct *r)
 	{
 		pr_err( "OOM_RESTART: sending message to userland" );
 		if( restart_module_loaded() )
-			rc = restart_cmd_send();
+			rc = restart_cmd_send( r->cmdline );
 		else
 		{
 			pr_err( "Restart module not loaded" );
@@ -161,7 +161,4 @@ void oom_restart(struct restart_struct *r)
 		}
 	}
 */
-failure:
-	pr_err( "OOM_RESTART: setting up netlink failed with error %d", rc );
-	return;
 }

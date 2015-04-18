@@ -3,24 +3,26 @@
 # Makfile to build Restarter
 
 CC=gcc
-CFLAGS=-Wall -std=c99 
+CFLAGS=-Wall -std=c99 -DMEMWATCH -DMW_STDIO -c
+PTHREAD=-DMW_PTHREADS
 DEBUG=-g -DDEBUG
-LINK=
-LIBNL=$(shell pkg-config --libs libnl-3.0 )
-#CFLAGS+=$(shell pkg-config --cflags libnl-3.0 )
+LINK_PTHREAD=-lpthread
 
 all: restarter
 
 debug: restarter_debug
 
-restarter: restarter.c
-	$(CC) $(CFLAGS) $^ -o $@
+restarter: restarter.o logging.o memwatch.o
+	$(CC) $^ -o $@
+
+restarter_db: restarter_db.o logging_db.o memwatch.o
+	$(CC) $^ -o $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(LIBNL) $^ -o $@ 
+	$(CC) $(CFLAGS) $^
 
 %_db.o: %.c
-	$(CC) $(CFLAGS) $(DEBUG) -o $@ $^
+	$(CC) $(CFLAGS) $(DEBUG) $^
 
 clean:
 	rm *.o restarter restarter_debug
